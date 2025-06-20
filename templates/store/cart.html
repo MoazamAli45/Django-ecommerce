@@ -1,0 +1,277 @@
+{% extends 'store/base.html' %} {% load static %} {% block content %}
+<section class="cart-section py-5">
+  <div class="container">
+    <h1 class="text-center mb-5 fw-bold animate-fade-in">Your Shopping Cart</h1>
+    {% if cart.items.exists %}
+    <div
+      class="table-responsive glass-card animate-fade-in"
+      style="animation-delay: 0.2s"
+    >
+      <table class="table table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th scope="col">Product</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Price</th>
+            <th scope="col">Total</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cart.items.all %}
+          <tr class="animate-slide-in" style="animation-delay: 0.1s">
+            <td>
+              <div class="d-flex align-items-center">
+                {% if item.product.image %}
+                <img
+                  src="{{ item.product.image.url }}"
+                  class="cart-item-image mr-3 lazy"
+                  alt="{{ item.product.name }}"
+                  loading="lazy"
+                />
+                {% else %}
+                <img
+                  src="{% static 'images/no-image.jpg' %}"
+                  class="cart-item-image mr-3 lazy"
+                  alt="No Image"
+                  loading="lazy"
+                />
+                {% endif %}
+                <span>{{ item.product.name }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="quantity-control d-flex align-items-center">
+                <form
+                  action="{% url 'store:add_to_cart' item.product.id %}"
+                  method="post"
+                  class="d-inline"
+                >
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    class="btn btn-sm btn-outline-primary mr-2"
+                    aria-label="Increase quantity of {{ item.product.name }}"
+                  >
+                    +
+                  </button>
+                </form>
+                <span class="badge badge-primary px-3 py-2"
+                  >{{ item.quantity }}</span
+                >
+                <button
+                  class="btn btn-sm btn-outline-primary ml-2 decrease-quantity"
+                  data-item-id="{{ item.id }}"
+                  data-product-id="{{ item.product.id }}"
+                  aria-label="Decrease quantity of {{ item.product.name }}"
+                >
+                  -
+                </button>
+              </div>
+            </td>
+            <td>${{ item.product.price|floatformat:2 }}</td>
+            <td>${{ item.get_total_price|floatformat:2 }}</td>
+            <td>
+              <a
+                href="{% url 'store:remove_from_cart' item.id %}"
+                class="btn btn-danger btn-sm btn-gradient"
+                aria-label="Remove {{ item.product.name }} from cart"
+                >Remove</a
+              >
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="empty-cart text-center glass-card py-5 animate-fade-in">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h3 class="mb-3">Your Cart is Empty</h3>
+      <p class="text-muted mb-4">Looks like you haven't added any items yet.</p>
+      <a
+        href="{% url 'store:home' %}"
+        class="btn btn-primary btn-lg btn-gradient"
+        aria-label="Start shopping"
+        >Start Shopping</a
+      >
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Custom CSS -->
+<style>
+  :root {
+    --primary: #007bff;
+    --gradient: linear-gradient(135deg, #007bff, #00d4ff);
+    --text-dark: #2c3e50;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+  }
+
+  .cart-section {
+    background: #f4f7fa;
+    min-height: 80vh;
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
+  }
+  .glass-card:hover {
+    transform: translateY(-5px);
+  }
+  .table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+  .thead-light {
+    background: var(--gradient);
+    color: white;
+  }
+  .thead-light th {
+    font-weight: 600;
+    padding: 1.2rem;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+  }
+  .table-hover tbody tr:hover {
+    background: rgba(0, 123, 255, 0.05);
+    transition: background 0.3s ease;
+  }
+  .cart-item-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .quantity-control .badge {
+    font-size: 1rem;
+    min-width: 50px;
+    text-align: center;
+    border-radius: 20px;
+  }
+  .quantity-control .btn {
+    padding: 0.3rem 1rem;
+    font-size: 1rem;
+    border-radius: 50%;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  .quantity-control .btn:hover {
+    transform: scale(1.1);
+  }
+  .btn-gradient {
+    background: var(--gradient);
+    border: none;
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, #0056b3, #00aaff);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+  .cart-summary h4 {
+    color: var(--text-dark);
+    font-size: 1.8rem;
+  }
+  .empty-cart {
+    max-width: 600px;
+    margin: auto;
+    transition: transform 0.3s ease;
+  }
+  .empty-cart:hover {
+    transform: translateY(-5px);
+  }
+  .animate-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+  .animate-slide-in {
+    opacity: 0;
+    transform: translateX(20px);
+    animation: slideIn 0.6s ease-out forwards;
+  }
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  /* Accessibility */
+  .btn:focus,
+  .table tr:focus {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+  }
+  /* Lazy Loading */
+  .lazy {
+    background: #f4f7fa;
+    transition: opacity 0.3s;
+  }
+  .lazy.loaded {
+    background: none;
+  }
+</style>
+
+<!-- Custom JavaScript -->
+<script>
+  // Lazy load images
+  document.addEventListener("DOMContentLoaded", function () {
+    const images = document.querySelectorAll("img.lazy");
+    const options = {
+      rootMargin: "0px",
+      threshold: 0.1,
+    };
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src || img.src;
+          img.classList.add("loaded");
+          observer.unobserve(img);
+        }
+      });
+    }, options);
+    images.forEach((img) => observer.observe(img));
+  });
+
+  // Handle quantity decrease
+  document.addEventListener("DOMContentLoaded", function () {
+    const decreaseButtons = document.querySelectorAll(".decrease-quantity");
+    decreaseButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const itemId = this.dataset.itemId;
+        const quantityBadge = this.parentElement.querySelector(".badge");
+        let currentQuantity = parseInt(quantityBadge.textContent);
+
+        if (currentQuantity > 1) {
+          // Simulate decrement by adding to cart with quantity -1 (not supported by current view)
+          // Instead, alert user to remove item if they want to reduce further
+          currentQuantity--;
+          quantityBadge.textContent = currentQuantity;
+          // Note: Without view changes, we can't update backend quantity here
+          alert(
+            "Decreasing quantity requires removing and re-adding the item due to view limitations. Please remove the item and add it again with the desired quantity."
+          );
+        } else {
+          // Redirect to remove_from_cart if quantity would be 0
+          window.location.href = `/cart/remove/${itemId}/`;
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

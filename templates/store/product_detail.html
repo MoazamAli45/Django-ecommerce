@@ -1,0 +1,236 @@
+{% extends 'store/base.html' %} {% load static %} {% block content %}
+<section class="product-detail-section py-5">
+  <div class="container">
+    <div class="row">
+      <!-- Product Image -->
+      <div class="col-lg-6 mb-4 animate-fade-in">
+        <div class="product-image-wrapper glass-card">
+          {% if product.image %}
+          <img
+            src="{{ product.image.url }}"
+            class="product-image img-fluid lazy"
+            alt="{{ product.name }}"
+            loading="lazy"
+            data-zoom-image="{{ product.image.url }}"
+          />
+          {% else %}
+          <img
+            src="{% static 'images/no-image.jpg' %}"
+            class="product-image img-fluid lazy"
+            alt="No Image"
+            loading="lazy"
+          />
+          {% endif %}
+        </div>
+      </div>
+      <!-- Product Details -->
+      <div class="col-lg-6 mb-4 animate-fade-in" style="animation-delay: 0.3s">
+        <div class="product-info glass-card p-4">
+          <h1 class="product-title mb-3">{{ product.name }}</h1>
+          <p class="product-description text-muted mb-4">
+            {{ product.description }}
+          </p>
+          <div class="product-meta mb-4">
+            <p class="price mb-2">
+              <strong>Price:</strong>
+              <span class="text-primary"
+                >${{ product.price|floatformat:2 }}</span
+              >
+            </p>
+            <p class="stock mb-2">
+              <strong>Stock:</strong>
+              {% if product.stock == 0 %}
+              <span class="badge bg-danger"
+                ><i class="fas fa-times-circle mr-1"></i> Out of Stock</span
+              >
+              {% elif product.stock <= 5 %}
+              <span class="badge bg-warning text-dark"
+                ><i class="fas fa-exclamation-triangle mr-1"></i> Low Stock
+              </span>
+              {% else %}
+              <span class="badge bg-success"
+                ><i class="fas fa-check-circle mr-1"></i> In Stock
+              </span>
+              {% endif %}
+            </p>
+          </div>
+          {% if user.is_authenticated %} {% if product.stock > 0 %}
+          <a
+            href="{% url 'store:add_to_cart' product.id %}"
+            class="btn btn-primary btn-lg btn-gradient animate-zoom-in"
+            aria-label="Add {{ product.name }} to cart"
+          >
+            <i class="fas fa-cart-plus mr-2"></i> Add to Cart
+          </a>
+          {% else %}
+          <button
+            class="btn btn-secondary btn-lg disabled"
+            aria-disabled="true"
+          >
+            Out of Stock
+          </button>
+          {% endif %} {% else %}
+          <div
+            class="alert alert-info animate-fade-in"
+            style="animation-delay: 0.6s"
+          >
+            Please
+            <a href="{% url 'store:login' %}" class="alert-link">login</a> to
+            add items to your cart.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Custom CSS -->
+<style>
+  :root {
+    --primary: #007bff;
+    --gradient: linear-gradient(135deg, #007bff, #00d4ff);
+    --text-dark: #2c3e50;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+  }
+
+  .product-detail-section {
+    background: #f4f7fa;
+    min-height: 80vh;
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+  .glass-card:hover {
+    transform: translateY(-5px);
+  }
+  .product-image-wrapper {
+    position: relative;
+    padding: 1rem;
+  }
+  .product-image {
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+    border-radius: 10px;
+    transition: transform 0.5s ease;
+    cursor: zoom-in;
+  }
+  .product-image:hover {
+    transform: scale(1.05);
+  }
+  .product-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+  .product-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  .price span {
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  .stock .badge {
+    font-size: 0.9rem;
+    padding: 0.5em 1em;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .btn-gradient {
+    background: var(--gradient);
+    border: none;
+    padding: 1rem 2.5rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, #0056b3, #00aaff);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+  .btn-secondary.disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  .animate-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+  .animate-zoom-in {
+    opacity: 0;
+    transform: scale(0.8);
+    animation: zoomIn 0.8s ease-out forwards;
+  }
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes zoomIn {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  /* Accessibility */
+  .btn:focus {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+  }
+  /* Lazy Loading */
+  .lazy {
+    background: #f8f9fa;
+    transition: opacity 0.3s;
+  }
+  .lazy.loaded {
+    background: none;
+  }
+</style>
+
+<!-- Custom JavaScript -->
+<script>
+  // Lazy load images
+  document.addEventListener("DOMContentLoaded", function () {
+    const images = document.querySelectorAll("img.lazy");
+    const options = {
+      rootMargin: "0px",
+      threshold: 0.1,
+    };
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src || img.src;
+          img.classList.add("loaded");
+          observer.unobserve(img);
+        }
+      });
+    }, options);
+    images.forEach((img) => observer.observe(img));
+  });
+
+  // Simple image zoom effect
+  document.querySelectorAll(".product-image").forEach((img) => {
+    img.addEventListener("mousemove", function (e) {
+      const rect = img.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      img.style.transformOrigin = `${x}% ${y}%`;
+    });
+    img.addEventListener("mouseleave", function () {
+      img.style.transformOrigin = "center center";
+      img.style.transform = "scale(1.05)";
+    });
+  });
+</script>
+{% endblock %}
