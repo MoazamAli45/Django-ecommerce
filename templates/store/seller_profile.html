@@ -1,0 +1,162 @@
+{% extends 'store/base.html' %} {% load crispy_forms_tags %} {% block content %}
+<section class="seller-profile-section py-5">
+  <div class="container">
+    <h1 class="text-center mb-5 fw-bold animate-fade-in">Seller Profile</h1>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="glass-card animate-fade-in" style="animation-delay: 0.2s">
+          <div class="card-header bg-transparent border-0">
+            <h3 class="mb-0">{{ seller.business_name }}</h3>
+            <p class="text-muted mb-0">
+              {% if seller.is_approved %}
+              <span class="badge badge-success">Approved Seller</span>
+              {% else %}
+              <span class="badge badge-warning">Pending Approval</span>
+              {% endif %}
+            </p>
+          </div>
+          <div class="card-body">
+            <!-- Seller Details -->
+            <div class="mb-4">
+              <h5 class="fw-bold">Current Details</h5>
+              <ul class="list-unstyled">
+                <li><strong>User Name:</strong> {{ seller.user.username }}</li>
+                <li><strong>Email:</strong> {{ seller.user.email }}</li>
+
+                <li>
+                  <strong>Contact Phone:</strong>
+                  {{seller.phone|default:"Not provided" }}
+                </li>
+                <li>
+                  <strong>Address:</strong>
+                  {{ seller.address|default:"Not provided" }}
+                </li>
+                <li>
+                  <strong>Joined:</strong> {{ seller.created_at|date:"F j, Y" }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Update Form -->
+            <h5 class="fw-bold mb-3">Update Profile</h5>
+            <form
+              method="post"
+              class="animate-fade-in"
+              style="animation-delay: 0.4s"
+            >
+              {% csrf_token %} {{ form|crispy }}
+              <div class="text-right">
+                <button type="submit" class="btn btn-primary">
+                  Save Changes
+                </button>
+                <a
+                  href="{% url 'store:seller_dashboard' %}"
+                  class="btn btn-secondary ml-2"
+                  >Cancel</a
+                >
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Custom CSS -->
+<style>
+  :root {
+    --primary: #007bff;
+    --gradient: linear-gradient(135deg, #007bff, #00d4ff);
+    --text-dark: #2c3e50;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+  }
+
+  .seller-profile-section {
+    background: #f4f7fa;
+    min-height: 80vh;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
+  }
+
+  .glass-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .card-header h3 {
+    color: var(--text-dark);
+    font-weight: 600;
+  }
+
+  .badge-success {
+    background: #28a745;
+  }
+
+  .badge-warning {
+    background: #ffc107;
+  }
+
+  .btn-gradient {
+    background: var(--gradient);
+    border: none;
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, #0056b3, #00aaff);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .animate-fade-in {
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+  .list-unstyled li {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+  }
+
+  .list-unstyled strong {
+    color: #007bff;
+  }
+
+  .form-group label {
+    color: var(--text-dark);
+    font-weight: 500;
+  }
+
+  .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+</style>
+
+<!-- Custom JavaScript -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function () {
+      const alerts = document.querySelectorAll(".alert");
+      alerts.forEach((alert) => {
+        $(alert).alert("close");
+      });
+    }, 5000);
+  });
+</script>
+{% endblock %}

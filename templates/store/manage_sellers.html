@@ -1,0 +1,65 @@
+{% extends 'store/base.html' %} {% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Manage Sellers</h2>
+    <a href="{% url 'store:create_seller' %}" class="btn btn-success"
+      >Create New Seller</a
+    >
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Business Name</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for seller in sellers %}
+            <tr>
+              <td>{{ seller.business_name }}</td>
+              <td>{{ seller.user.username }}</td>
+              <td>{{ seller.user.email }}</td>
+              <td>
+                {% if seller.is_approved %}
+                <span class="badge bg-success">Approved</span>
+                {% else %}
+                <span class="badge bg-warning">Pending</span>
+                {% endif %}
+              </td>
+              <td>{{ seller.created_at|date:"M d, Y" }}</td>
+              <td>
+                {% if seller.is_approved %}
+                <a
+                  href="{% url 'store:disapprove_seller' seller.id %}"
+                  class="btn btn-sm btn-warning"
+                  >Disapprove</a
+                >
+                {% else %}
+                <a
+                  href="{% url 'store:approve_seller' seller.id %}"
+                  class="btn btn-sm btn-success"
+                  >Approve</a
+                >
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center">No sellers found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

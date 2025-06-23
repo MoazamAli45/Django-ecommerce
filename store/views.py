@@ -1,23 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import Product, Cart, CartItem
+from .models import Product, Cart, CartItem, Seller
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from .forms import SellerCreationForm, ProductForm, SellerUpdateForm
+from django.contrib.auth.models import User
 
 def home(request):
-    products = Product.objects.all()
-    print(products, "PRODUCTS")
-    for p in products:
-        print(f"Name: {p.name}, Price: {p.price}, Stock: {p.stock}, Description: {p.description}")
-
+    products = Product.objects.filter(seller__is_approved=True) | Product.objects.filter(seller__isnull=True)
     return render(request, 'store/home.html', {'products': products})
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    print(product,"PRODUCT")
     return render(request, 'store/product_detail.html', {'product': product})
 
 @login_required
@@ -71,3 +68,117 @@ def signup(request):
 def custom_logout(request):
     logout(request)
     return redirect('store:home')
+
+# Helper function to check if user is superuser
+def is_superuser(user):
+    return user.is_superuser
+
+def is_seller(user):
+    return hasattr(user, 'seller')
+
+# Superuser views for seller management
+@user_passes_test(is_superuser)
+def create_seller(request):
+    if request.method == 'POST':
+        form = SellerCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Seller account created successfully!')
+            return redirect('store:manage_sellers')
+    else:
+        form = SellerCreationForm()
+    return render(request, 'store/create_seller.html', {'form': form})
+
+@user_passes_test(is_superuser)
+def manage_sellers(request):
+    sellers = Seller.objects.all().order_by('-created_at')
+    return render(request, 'store/manage_sellers.html', {'sellers': sellers})
+
+@user_passes_test(is_superuser)
+def approve_seller(request, seller_id):
+    seller = get_object_or_404(Seller, id=seller_id)
+    seller.is_approved = True
+    seller.save()
+    messages.success(request, f'Seller {seller.business_name} has been approved!')
+    return redirect('store:manage_sellers')
+
+@user_passes_test(is_superuser)
+def disapprove_seller(request, seller_id):
+    seller = get_object_or_404(Seller, id=seller_id)
+    seller.is_approved = False
+    seller.save()
+    messages.warning(request, f'Seller {seller.business_name} has been disapproved!')
+    return redirect('store:manage_sellers')
+
+# Seller views
+@login_required
+@user_passes_test(is_seller)
+def seller_dashboard(request):
+    seller = request.user.seller
+    products = seller.products.all()
+    return render(request, 'store/seller_dashboard.html', {
+        'seller': seller,
+        'products': products
+    })
+
+@login_required
+@user_passes_test(is_seller)
+def add_product(request):
+    if not request.user.seller.is_approved:
+        messages.error(request, 'Your seller account is not approved yet.')
+        return redirect('store:seller_dashboard')
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.seller = request.user.seller
+            product.save()
+            messages.success(request, 'Product added successfully!')
+            return redirect('store:seller_dashboard')
+    else:
+        form = ProductForm()
+    return render(request, 'store/add_product.html', {'form': form})
+
+@login_required
+@user_passes_test(is_seller)
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, seller=request.user.seller)
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Product updated successfully!')
+            return redirect('store:seller_dashboard')
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'store/edit_product.html', {'form': form, 'product': product})
+
+@login_required
+@user_passes_test(is_seller)
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, seller=request.user.seller)
+    
+    if request.method == 'GET':
+        product.delete()
+        messages.success(request, 'Product deleted successfully!')
+        return redirect('store:seller_dashboard')
+    
+    return render(request, 'store/seller_dashboard.html', {'product': product})
+
+@login_required
+@user_passes_test(is_seller)
+def seller_profile(request):
+    seller = request.user.seller
+    
+    if request.method == 'POST':
+        form = SellerUpdateForm(request.POST, instance=seller)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('store:seller_profile')
+    else:
+        form = SellerUpdateForm(instance=seller)
+    
+    return render(request, 'store/seller_profile.html', {'form': form, 'seller': seller})
