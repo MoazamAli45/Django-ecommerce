@@ -103,6 +103,7 @@ if cloud_name and api_key and api_secret:
         api_secret=api_secret
     )
 else:
+    #  Warning added
     print("⚠️ Warning: Cloudinary environment variables not set properly.")
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
