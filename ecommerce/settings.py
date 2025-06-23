@@ -92,20 +92,18 @@ load_dotenv()
 DATABASES = {
  'default': dj_database_url.parse(os.getenv('DATABASE_URL', ''))
 }
+cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
+api_key = os.getenv('CLOUDINARY_API_KEY')
+api_secret = os.getenv('CLOUDINARY_API_SECRET')
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-}
-
-
-
-cloudinary.config( 
-  cloud_name = CLOUDINARY_STORAGE['CLOUD_NAME'], 
-  api_key = CLOUDINARY_STORAGE['API_KEY'], 
-  api_secret = CLOUDINARY_STORAGE['API_SECRET'] 
-)
+if cloud_name and api_key and api_secret:
+    cloudinary.config(
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret
+    )
+else:
+    print("⚠️ Warning: Cloudinary environment variables not set properly.")
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
