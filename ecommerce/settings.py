@@ -128,6 +128,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']  # Where hero.png is located
 STATIC_ROOT = BASE_DIR / 'staticfiles'    # For collectstatic
 
+
+
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
