@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-+$h^#&)m&#*kb^y81=ziec&6^+%w5$=5w__(p_c$qebc(l$4dd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -105,6 +105,8 @@ if cloud_name and api_key and api_secret:
 else:
     #  Warning added
     print("⚠️ Warning: Cloudinary environment variables not set properly.")
+
+print("Cloud name:", os.getenv('CLOUDINARY_CLOUD_NAME'))  # For debugging on Vercel
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
