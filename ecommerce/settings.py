@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url # type: ignore
+# Explicit SDK setup
+import cloudinary # type: ignore
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -43,7 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'store.apps.StoreConfig',
     'crispy_forms',
-    'crispy_bootstrap4'
+    'crispy_bootstrap4',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -88,6 +92,21 @@ load_dotenv()
 DATABASES = {
  'default': dj_database_url.parse(os.getenv('DATABASE_URL', ''))
 }
+cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
+api_key = os.getenv('CLOUDINARY_API_KEY')
+api_secret = os.getenv('CLOUDINARY_API_SECRET')
+
+if cloud_name and api_key and api_secret:
+    cloudinary.config(
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret
+    )
+else:
+    #  Warning added
+    print("⚠️ Warning: Cloudinary environment variables not set properly.")
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 # Password validation
