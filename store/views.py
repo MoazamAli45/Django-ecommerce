@@ -6,6 +6,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.http import JsonResponse
 from .forms import SellerCreationForm, ProductForm, SellerUpdateForm
 from django.contrib.auth.models import User
 
@@ -23,22 +24,41 @@ def add_to_cart(request, product_id):
     cart, created = Cart.objects.get_or_create(user=request.user)
     cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product)
     
+    success = False
+    message = ""
+    
     if not item_created:
         if cart_item.quantity < product.stock:
             cart_item.quantity += 1
             cart_item.save()
-            messages.success(request, f"Added {product.name} to cart.")
+            success = True
+            message = f"Added {product.name} to cart."
+            messages.success(request, message)
         else:
-            messages.error(request, "Cannot add more items. Stock limit reached.")
+            message = "Cannot add more items. Stock limit reached."
+            messages.error(request, message)
     else:
         if product.stock > 0:
             cart_item.save()
-            messages.success(request, f"Added {product.name} to cart.")
+            success = True
+            message = f"Added {product.name} to cart."
+            messages.success(request, message)
         else:
-            messages.error(request, "Product out of stock.")
+            message = "Product out of stock."
+            messages.error(request, message)
     
-    return redirect('store:cart')
-
+    # Handle AJAX request
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        cart_count = cart.items.count()  # type: ignore # Get updated cart item count
+        return JsonResponse({
+            'success': success,
+            'message': message,
+            'cart_count': cart_count
+        })
+    
+    # Fallback for non-AJAX (redirect to referer or home)
+    referer = request.META.get('HTTP_REFERER', 'store:home')
+    return redirect(referer)
 @login_required
 def cart(request):
     cart = get_object_or_404(Cart, user=request.user)

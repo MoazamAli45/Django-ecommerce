@@ -29,7 +29,7 @@
               <td>{{ seller.user.email }}</td>
               <td>
                 {% if seller.is_approved %}
-                <span class="badge bg-success">Approved</span>
+                <span class="badge bg-success">Activated</span>
                 {% else %}
                 <span class="badge bg-warning">Pending</span>
                 {% endif %}
@@ -40,13 +40,13 @@
                 <a
                   href="{% url 'store:disapprove_seller' seller.id %}"
                   class="btn btn-sm btn-warning"
-                  >Disapprove</a
+                  >Deactivate</a
                 >
                 {% else %}
                 <a
                   href="{% url 'store:approve_seller' seller.id %}"
                   class="btn btn-sm btn-success"
-                  >Approve</a
+                  >Activate</a
                 >
                 {% endif %}
               </td>
