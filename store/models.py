@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField # type: ignore
 
+
+
 class Seller(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     business_name = models.CharField(max_length=200)
